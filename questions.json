@@ -1,0 +1,254 @@
+[
+  {
+    "id": "d01",
+    "tier": "direct",
+    "question": "Qual é o papel do Encarregado de Dados (DPO) segundo o Aviso Externo de Privacidade da Vale?",
+    "gold_docs": [
+      "Arquivo1.md"
+    ],
+    "must_contain": [
+      "ANPD",
+      "canal de comunicação"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d02",
+    "tier": "direct",
+    "question": "De quanto em quanto tempo o Código de Conduta da Vale deve ser revisado no máximo?",
+    "gold_docs": [
+      "Arquivo2.md"
+    ],
+    "must_contain": [
+      "3",
+      "anos"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d03",
+    "tier": "direct",
+    "question": "Qual é o número de telefone do Canal de Acolhimento disponibilizado para a força de trabalho da Petrobras?",
+    "gold_docs": [
+      "Arquivo3.md"
+    ],
+    "must_contain": [
+      "0800-287-2270"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d04",
+    "tier": "direct",
+    "question": "Qual órgão da Petrobras é responsável por aprovar o apetite a risco da companhia?",
+    "gold_docs": [
+      "Arquivo4.md"
+    ],
+    "must_contain": [
+      "Conselho de Administração"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d05",
+    "tier": "direct",
+    "question": "Quem exerce a função de Encarregado pelo tratamento de dados pessoais na estrutura da Petrobras?",
+    "gold_docs": [
+      "Arquivo5.md"
+    ],
+    "must_contain": [
+      "Gerente Geral de Privacidade"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d06",
+    "tier": "direct",
+    "question": "Quais são as referências de normas e padrões internacionais adotadas na gestão de riscos da Vale?",
+    "gold_docs": [
+      "Arquivo6.md"
+    ],
+    "must_contain": [
+      "ISO 31000",
+      "COSO-ERM"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d07",
+    "tier": "direct",
+    "question": "Quem é o Presidente do Conselho de Administração da Vale citado na mensagem de liderança do Código de Conduta?",
+    "gold_docs": [
+      "Arquivo2.md"
+    ],
+    "must_contain": [
+      "Daniel André Stieler"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "d08",
+    "tier": "direct",
+    "question": "Qual sistema eletrônico da CGU é indicado pela Petrobras para realizar consultas sobre conflito de interesses?",
+    "gold_docs": [
+      "Arquivo3.md"
+    ],
+    "must_contain": [
+      "SeCI"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m01",
+    "tier": "multi",
+    "question": "Qual a diferença na periodicidade máxima de revisão do Código de Conduta entre a Petrobras e a Vale?",
+    "gold_docs": [
+      "Arquivo2.md",
+      "Arquivo3.md"
+    ],
+    "must_contain": [
+      "dois anos",
+      "3 anos"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m02",
+    "tier": "multi",
+    "question": "Como o papel do Encarregado (DPO) é definido no documento da Vale em comparação com quem ocupa essa função na Petrobras?",
+    "gold_docs": [
+      "Arquivo1.md",
+      "Arquivo5.md"
+    ],
+    "must_contain": [
+      "Gerente Geral de Privacidade",
+      "ANPD"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m03",
+    "tier": "multi",
+    "question": "Qual é o período regular de revisão da Política de Gestão de Riscos na Vale e qual a ata de aprovação da política da Petrobras?",
+    "gold_docs": [
+      "Arquivo4.md",
+      "Arquivo6.md"
+    ],
+    "must_contain": [
+      "5 anos",
+      "1.647"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m04",
+    "tier": "multi",
+    "question": "Quais são os valores centrais declarados no Código de Conduta da Vale e no Código de Conduta Ética da Petrobras?",
+    "gold_docs": [
+      "Arquivo2.md",
+      "Arquivo3.md"
+    ],
+    "must_contain": [
+      "A vida em primeiro lugar",
+      "CUIDADO COM AS PESSOAS"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m05",
+    "tier": "multi",
+    "question": "Quais são as multas administrativas máximas previstas na LGPD mencionadas nos documentos de proteção de dados da Petrobras e da Vale?",
+    "gold_docs": [
+      "Arquivo1.md",
+      "Arquivo5.md"
+    ],
+    "must_contain": [
+      "50.000.000,00",
+      "2%"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m06",
+    "tier": "multi",
+    "question": "Como o conceito de Linhas de Defesa é aplicado na estrutura de gestão de riscos da Vale e da Petrobras?",
+    "gold_docs": [
+      "Arquivo4.md",
+      "Arquivo6.md"
+    ],
+    "must_contain": [
+      "Linhas de Defesa"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m07",
+    "tier": "multi",
+    "question": "Quais são os canais oficiais para realizar denúncias de desvios de conduta na Vale e na Petrobras?",
+    "gold_docs": [
+      "Arquivo2.md",
+      "Arquivo3.md"
+    ],
+    "must_contain": [
+      "0800 601 6925",
+      "Canal de Denúncias"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m08",
+    "tier": "multi",
+    "question": "Quais direitos dos titulares de dados pessoais são destacados tanto no aviso da Vale quanto no guia da Petrobras?",
+    "gold_docs": [
+      "Arquivo1.md",
+      "Arquivo5.md"
+    ],
+    "must_contain": [
+      "anonimização",
+      "confirmação"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m09",
+    "tier": "multi",
+    "question": "De que forma o valor 'A vida em primeiro lugar' da Vale se conecta com suas diretrizes de Gestão de Riscos?",
+    "gold_docs": [
+      "Arquivo2.md",
+      "Arquivo6.md"
+    ],
+    "must_contain": [
+      "A Vida em Primeiro Lugar"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "m10",
+    "tier": "multi",
+    "question": "Como a Petrobras articula o compromisso ético de seu Código de Conduta com a sua Política de Gestão de Riscos Empresariais?",
+    "gold_docs": [
+      "Arquivo3.md",
+      "Arquivo4.md"
+    ],
+    "must_contain": [
+      "ética"
+    ],
+    "expect_refusal": false
+  },
+  {
+    "id": "n01",
+    "tier": "none",
+    "question": "Qual é o valor numérico exato do orçamento anual destinado ao plano de investimentos em segurança de barragens da Vale para o ano de 2026?",
+    "gold_docs": [],
+    "must_contain": [],
+    "expect_refusal": true
+  },
+  {
+    "id": "n02",
+    "tier": "none",
+    "question": "Qual é o nome completo e o cargo do Gerente Geral do Canal de Denúncias da Petrobras mencionado nos normativos?",
+    "gold_docs": [],
+    "must_contain": [],
+    "expect_refusal": true
+  }
+]
