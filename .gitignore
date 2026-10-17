@@ -1,0 +1,18 @@
+# Ambientes virtuais e cache Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Banco vetorial local (ChromaDB) e logs do Ollama
+chroma_lesson09/
+ollama.log
+temp_git/
+
+# Arquivos temporários de sistema/IDE
+.DS_Store
+Thumbs.db
+
