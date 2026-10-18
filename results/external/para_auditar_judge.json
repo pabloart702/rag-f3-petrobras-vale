@@ -1,1 +1,95 @@
-[]
+[
+  {
+    "model": "respostas-chatgpt",
+    "id": "d09",
+    "tier": "direct",
+    "question": "Qual é a data e o código da deliberação (DCA) de aprovação da revisão do Código de Conduta da Vale pelo Conselho de Administração?",
+    "gold_docs": [
+      "Arquivo1.md"
+    ],
+    "must_contain": [
+      "28/04/2026",
+      [
+        "019/2026",
+        "DCA nº 019/2026"
+      ]
+    ],
+    "expect_refusal": false,
+    "answer": "28 de abril de 2026, DCA nº 019/2026. [Arquivo1.md]",
+    "missing_keywords": "[\"28/04/2026\"]"
+  },
+  {
+    "model": "respostas-chatgpt",
+    "id": "d16",
+    "tier": "direct",
+    "question": "Qual artigo do Estatuto Social da Petrobras é citado na seção de Aplicação e Abrangência da Política de Gestão de Riscos Empresariais e qual a data de sua aprovação pelo CA?",
+    "gold_docs": [
+      "Arquivo6.md"
+    ],
+    "must_contain": [
+      [
+        "artigo 16",
+        "art. 16"
+      ],
+      "16/12/2020"
+    ],
+    "expect_refusal": false,
+    "answer": "O artigo 16 do Estatuto Social da Petrobras é citado na seção de Aplicação e Abrangência. A Política de Gestão de Riscos Empresariais foi aprovada pelo Conselho de Administração conforme a ATA CA 1.647, item 12, Pauta nº 183, em 16 de dezembro de 2020. [Arquivo6.md]",
+    "missing_keywords": "[\"16/12/2020\"]"
+  },
+  {
+    "model": "respostas-chatgpt",
+    "id": "m08",
+    "tier": "multi",
+    "question": "Quais direitos dos titulares de dados pessoais são destacados tanto no aviso da Vale quanto no guia da Petrobras?",
+    "gold_docs": [
+      "Arquivo3.md",
+      "Arquivo4.md"
+    ],
+    "must_contain": [
+      "anonimização",
+      "confirmação"
+    ],
+    "expect_refusal": false,
+    "answer": "O Aviso da Vale destaca os direitos de confirmar a existência de tratamento, acessar ou retificar dados, limitar seu uso, opor-se ao tratamento ou revogar o consentimento e solicitar anonimização, bloqueio ou exclusão. [Arquivo3.md] A cartilha da Petrobras destaca o livre acesso aos dados e às informações sobre o tratamento, além dos princípios de qualidade dos dados e transparência. [Arquivo4.md]",
+    "missing_keywords": "[\"confirmação\"]"
+  },
+  {
+    "model": "respostas-chatgpt",
+    "id": "m11",
+    "tier": "multi",
+    "question": "Compare a data de aprovação pelo Conselho de Administração do Código de Conduta da Vale com a data de aprovação do Código de Conduta Ética da Petrobras.",
+    "gold_docs": [
+      "Arquivo1.md",
+      "Arquivo2.md"
+    ],
+    "must_contain": [
+      "28/04/2026",
+      "27/09/2024"
+    ],
+    "expect_refusal": false,
+    "answer": "O Código de Conduta da Vale registra aprovação pelo Conselho de Administração em 28/04/2026, conforme DCA nº 019/2026. [Arquivo1.md] Os documentos fornecidos não informam a data específica de aprovação do Código de Conduta Ética da Petrobras. [Arquivo2.md]",
+    "missing_keywords": "[\"27/09/2024\"]"
+  },
+  {
+    "model": "respostas-chatgpt",
+    "id": "m15",
+    "tier": "multi",
+    "question": "Quais políticas corporativas (códigos POL) são referenciadas tanto no Código de Conduta da Vale quanto na seção de Referências da Política de Gestão de Riscos da Vale?",
+    "gold_docs": [
+      "Arquivo1.md",
+      "Arquivo5.md"
+    ],
+    "must_contain": [
+      "POL-0041-G",
+      [
+        "POL-0037-G",
+        "POL-0035-G",
+        "POL-0016-G"
+      ]
+    ],
+    "expect_refusal": false,
+    "answer": "As políticas corporativas referenciadas tanto no Código de Conduta da Vale quanto na seção de Referências da Política de Gestão de Riscos são: POL-0001-G (Código de Conduta), POL-0005-G (Política de Direitos Humanos), POL-0012-G (Política de Mudanças Climáticas), POL-0016-G (Política Anticorrupção) e POL-0019-G (Política de Sustentabilidade). [Arquivo1.md] [Arquivo5.md]",
+    "missing_keywords": "[\"POL-0041-G\"]"
+  }
+]

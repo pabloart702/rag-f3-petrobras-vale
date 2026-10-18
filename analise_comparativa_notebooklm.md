@@ -1,4 +1,4 @@
-# Análise Comparativa: RAG Local (Família 3) vs. NotebookLM
+# Análise Comparativa: RAG Local (Família 3) vs. NotebookLM vs. ChatGPT
 
 Este relatório consolida a avaliação comparativa sobre o corpus normativo **Petrobras × Vale** (`Arquivo1.md` a `Arquivo6.md`), utilizando o conjunto expandido de **40 perguntas** (`questions.json`: 16 `direct`, 16 `multi` e 8 `none`) e a mesma função de avaliação automática (`grade`).
 
@@ -8,70 +8,83 @@ Este relatório consolida a avaliação comparativa sobre o corpus normativo **P
 
 ## 1. Enquadramento Metodológico
 
-| Sistema | Arquitetura | Vantagem Principal | Limitação Observada |
+| Sistema | Arquitetura | Vantagem Principal | Limitação Observada nos Testes |
 | :--- | :--- | :--- | :--- |
 | **RAG Local (`rag-f3-local.ipynb`)** | Embedding denso (`nomic-embed-text`) + Técnicas F3 (*Reranking*, *Compressão*, *Ordering*) + Gerador local (`qwen2.5:3b`) | Execução 100% local, custo zero de API, controle granular sobre *chunking*, *top-k*, reordenação e posicionamento no prompt. | Gerador compacto (3B parâmetros) sofre com *lost in the middle* e excesso de conservadorismo (recusas falsas) em janelas longas (~5.8k tokens). |
-| **NotebookLM (`respostas-notebooklm.json`)** | RAG Gerenciado + Modelo de Fronteira (família Gemini) com *grounding* estrito sobre os 6 documentos carregados na íntegra | Capacidade superior de leitura integral e síntese multi-documento (`gold_all = 1.00`), sem perder detalhes de rodapé, glossário ou tabelas. | Caixa-preta (sem controle sobre hiperparâmetros de recuperação ou compressão de tokens) e dependente de interface web/nuvem. |
+| **NotebookLM (`respostas-notebooklm.json`)** | RAG Gerenciado + Modelo de Fronteira (família Gemini) com *grounding* estrito sobre os 6 documentos carregados | Capacidade superior de leitura integral e síntese multi-documento (`gold_all = 1.00`), sem perder detalhes de rodapé, glossário ou tabelas. | Caixa-preta (sem controle sobre hiperparâmetros de recuperação ou compressão de tokens) e dependente de interface web/nuvem. |
+| **ChatGPT Web (`respostas-chatgpt.json`)** | Modelo de Fronteira com ferramenta interna de busca em arquivos (*File Search* / RAG sob demanda nos anexos) | Excelente redação e precisão em perguntas diretas (`direct`) e 100% de respeito à regra de recusa (`none = 1.00`). | **Não lê os arquivos inteiros de uma vez:** faz busca por trechos (*"no trecho consultado"*) e **perde informações de rodapé e final de arquivo** em perguntas `multi` (`m09`, `m11`, `m15`, `m16`). |
 
 ---
 
 ## 2. Placar Consolidado (40 Perguntas)
 
-Os dados brutos encontram-se em `results/summary_comparativo.csv` e `results/results_ext_respostas-notebooklm.csv`.
+Os dados brutos encontram-se em `results/summary_comparativo.csv`, `results/results_ext_respostas-notebooklm.csv` e `results/results_ext_respostas-chatgpt.csv`.
 
-| Variante / Sistema | Direct (16) | Multi (16) | Recusa / None (8) | **Acerto Geral (40)** | `gold_hit` | `gold_all` | Contexto Médio (tokens) | Latência Média (s) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **`baseline_r1` ($k=4$)** | 0.38 | 0.31 | 1.00 | **0.48** | 0.91 | 0.78 | 1.959 | 5.40s |
-| **`rerank_en` ($n=12 \to k=4$)** | 0.19 | 0.38 | 1.00 | **0.42** | 0.97 | 0.88 | 1.999 | 5.82s |
-| **`compress` ($k=4$ comprimido)** | 0.38 | 0.25 | 1.00 | **0.45** | 1.00 | 0.88 | 539 | 6.16s |
-| **`rerank_ml` ($n=12 \to k=4$)** | 0.44 | 0.44 | 1.00 | **0.55** | 1.00 | 0.88 | 2.011 | 5.89s |
-| **`rerank_ml_n20` ($n=20 \to k=4$)** | 0.44 | 0.44 | 1.00 | **0.55** | 1.00 | 0.91 | 2.029 | 6.44s |
-| **`order` ($k=12$ nas pontas)** | 0.69 | 0.50 | 0.88 | **0.65** | 1.00 | 0.97 | 5.846 | 7.91s |
-| **`baseline_k12` ($k=12$)** | 0.81 | 0.50 | 0.75 | **0.68** | 1.00 | 0.97 | 5.846 | 7.65s |
-| **`rerank_order` ($n=12$, rerank + pontas)** | 0.75 | **0.75** | **1.00** | **0.80** | 1.00 | 0.97 | 5.846 | 8.37s |
-| **NotebookLM (Web)** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | — | — |
-
----
-
-## 3. Principais Conclusões sobre as Técnicas da Família 3 (F3)
-
-1. **Impacto do Reranker Multilíngue (`rerank_en` vs. `rerank_ml`):**
-   - O cross-encoder em inglês (`ms-marco-MiniLM-L-6-v2`) degradou o acerto em perguntas diretas de **38% para 19%**, pois rebaixou chunks em português que continham termos técnicos e siglas.
-   - A troca pelo cross-encoder multilíngue (`mmarco-mMiniLMv2-L12-H384-v1`) elevou `gold_hit` para **100%**, `gold_all` de **78% para 88%** e subiu o acerto geral de **48% para 55%** mantendo apenas $k=4$ chunks no prompt.
-
-2. **Diagnóstico do *Lost in the Middle* (`baseline_k12` vs. `rerank_order`):**
-   - Aumentar a janela para $k=12$ (`baseline_k12`) resolveu quase toda a recuperação (`gold_all = 97%`) e subiu o acerto em perguntas `direct` para **81%**, mas causou dois efeitos colaterais clássicos:
-     - **Queda nas recusas (`none` caiu de 1.00 para 0.75):** Com muito ruído no contexto, o modelo deixou de recusar em `n02` e `n04`.
-     - **Estagnação nas perguntas `multi` (50%):** Quando o segundo documento necessário caía no meio do prompt (posições 5 a 9), o `qwen2.5:3b` ignorava uma das empresas.
-   - Ao aplicar o **Reranking + Ordering nas pontas (`rerank_order`)**, colocando os melhores chunks no início e no fim do prompt:
-     - O acerto em `multi` saltou de **50% para 75%** (recuperando `m01`, `m04`, `m12` e `m15`).
-     - A taxa de recusa correta em `none` voltou para **100%**.
-     - O acerto geral atingiu **80%** (+32 pontos percentuais acima do `baseline_r1`).
-
-3. **Compressão Extrativa (`compress`):**
-   - Reduziu o consumo de contexto em **73%** (de 1.959 para **539 tokens** em média), mas perdeu detalhes em perguntas compostas (`multi` = 25%) porque o filtro por frases isoladas descarta cabeçalhos ou linhas vizinhas de tabelas/glossários.
+| Variante / Sistema | Direct (16) | Multi (16) | Recusa / None (8) | **Acerto Geral Estrito (40)** | **Acerto Semântico / Judge (40)** | `gold_hit` | `gold_all` | Contexto Médio (tokens) | Latência Média (s) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`baseline_r1` ($k=4$)** | 0.38 | 0.31 | 1.00 | **0.48** | — | 0.91 | 0.78 | 1.959 | 5.40s |
+| **`rerank_en` ($n=12 \to k=4$)** | 0.19 | 0.38 | 1.00 | **0.42** | — | 0.97 | 0.88 | 1.999 | 5.82s |
+| **`compress` ($k=4$ comprimido)** | 0.38 | 0.25 | 1.00 | **0.45** | — | 1.00 | 0.88 | 539 | 6.16s |
+| **`rerank_ml` ($n=12 \to k=4$)** | 0.44 | 0.44 | 1.00 | **0.55** | — | 1.00 | 0.88 | 2.011 | 5.89s |
+| **`rerank_ml_n20` ($n=20 \to k=4$)** | 0.44 | 0.44 | 1.00 | **0.55** | — | 1.00 | 0.91 | 2.029 | 6.44s |
+| **`order` ($k=12$ nas pontas)** | 0.69 | 0.50 | 0.88 | **0.65** | — | 1.00 | 0.97 | 5.846 | 7.91s |
+| **`baseline_k12` ($k=12$)** | 0.81 | 0.50 | 0.75 | **0.68** | — | 1.00 | 0.97 | 5.846 | 7.65s |
+| **`rerank_order` ($n=12$, rerank + pontas)** | 0.75 | **0.75** | **1.00** | **0.80** | — | 1.00 | 0.97 | 5.846 | 8.37s |
+| **ChatGPT (Web)** | **0.88** *(1.00)* | **0.81** *(0.88)* | **1.00** | **0.88** | **0.93** *(ou 0.88 real)* | **1.00** | **1.00** | — | — |
+| **NotebookLM (Web)** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | — | — |
 
 ---
 
-## 4. Diagnóstico Detalhado: Onde o Melhor RAG Local (`rerank_order` = 80%) Perdeu para o NotebookLM (100%)
+## 3. Análise Crítica do ChatGPT: Grader Léxico vs. Falhas Reais de RAG Interno
 
-Dos 40 casos, o `rerank_order` errou apenas **8 perguntas** frente ao gabarito estrito, enquanto o NotebookLM acertou todas as 40. A inspeção linha a linha revela a natureza exata desses 8 erros:
+A avaliação do `respostas-chatgpt.json` trouxe um achado metodológico riquíssimo para o trabalho, pois separa claramente **falsos negativos do grader léxico** de **falhas reais de recuperação (RAG interno) do ChatGPT**:
 
-| ID | Tier | `gold_all` no `rerank_order` | Posições dos Chunks Gold | Tipo de Falha no RAG Local (`qwen2.5:3b`) | Como o NotebookLM Respondeu |
-| :--- | :---: | :---: | :---: | :--- | :--- |
-| **`d04`** | `direct` | `True` | `1` | **Recusa indevida (Falso Negativo):** Mesmo com `Arquivo6.md` no topo (posição 1), o `qwen2.5:3b` respondeu *"Os documentos corporativos não cobrem esta informação."* | Identificou diretamente o `Conselho de Administração (CA)` no item 5.1.1 de `[Arquivo6.md]`. |
-| **`d05`** | `direct` | `True` | `2` | **Recusa indevida (Falso Negativo):** O chunk de `Arquivo4.md` estava na posição 2, mas o gerador 3B recusou. | Identificou o `Gerente Geral de Privacidade` em `[Arquivo4.md]`. |
-| **`d06`** | `direct` | `True` | `1\|2\|3\|8\|11` | **Recusa indevida (Falso Negativo):** `Arquivo5.md` estava nas posições 1, 2 e 3, mas o gerador 3B recusou. | Listou `ISO 31000`, `ISO 55000`, `COSO-ERM` e `RBPS` citando `[Arquivo5.md]`. |
-| **`d16`** | `direct` | `True` | `1\|7` | **Resposta parcial (Omissão da 2ª metade):** Citou o `artigo 16` do Estatuto Social, mas esqueceu de informar a data de aprovação (`16/12/2020`) pedida no final da pergunta. | Respondeu ambos os fatos (`artigo 16` e `16/12/2020`) citando `[Arquivo6.md]`. |
-| **`m02`** | `multi` | `False` | `1` | **Falha de Recuperação Parcial:** Único caso da bateria em que faltou 1 documento gold entre os 12 candidatos (`Arquivo3.md` ficou de fora; só entrou `Arquivo4.md`). | Cruzou a definição conceitual do DPO em `[Arquivo3.md]` (canal com a `ANPD`) com o cargo em `[Arquivo4.md]` (`Gerente Geral de Privacidade`). |
-| **`m10`** | `multi` | `True` | `1\|2\|3\|5..12` | **Recusa indevida em pergunta de síntese:** O `qwen2.5:3b` iniciou com a frase de recusa por achar que a conexão não estava explícita. | Articulou o princípio 3.3 de `[Arquivo6.md]` (atuar de forma `ética`) com a análise de riscos na tomada de decisão em `[Arquivo2.md]`. |
-| **`m11`** | `multi` | `True` | `2\|3\|4..12` | **Detalhe de rodapé perdido no meio do contexto:** A data de aprovação está na última linha de `Arquivo1.md` e `Arquivo2.md`; o gerador 3B não localizou ambas e recusou. | Extraiu com precisão `28/04/2026` (`[Arquivo1.md]`) e `27/09/2024` (`[Arquivo2.md]`). |
-| **`m13`** | `multi` | `True` | `1\|2\|3\|4\|6\|9\|11\|12` | **Confusão entre entidades na síntese:** Atribuiu `Comitê Executivo` tanto para a Vale quanto para a Petrobras, omitindo a `Diretoria Executiva` da Petrobras. | Distinguiu claramente `Comitê Executivo` (`[Arquivo5.md]`) e `Diretoria Executiva (DE)` (`[Arquivo6.md]`). |
+### 3.1. Falsos Negativos do Grader Léxico (3 casos em que o ChatGPT acertou semanticamente)
+O arquivo `results/external/para_auditar_judge.json` apontou 5 reprovações do ChatGPT no `grade` estrito. Dessas 5, **3 foram apenas variações de formatação/paráfrase**:
+- **`d09` (`direct`):** O gabarito exigia `"28/04/2026"`, e o ChatGPT escreveu por extenso: `"28 de abril de 2026, DCA nº 019/2026. [Arquivo1.md]"`.
+- **`d16` (`direct`):** O gabarito exigia `"16/12/2020"`, e o ChatGPT escreveu por extenso: `"...em 16 de dezembro de 2020. [Arquivo6.md]"`.
+- **`m08` (`multi`):** O gabarito exigia o substantivo `"confirmação"`, e o ChatGPT usou o verbo `"confirmar a existência de tratamento"`.
+
+Considerando esses 3 acertos semânticos, o ChatGPT atinge **100% nas perguntas `direct` (16/16)**.
+
+### 3.2. Falhas Reais do RAG Interno do ChatGPT em Perguntas Multi-Documento (4 casos!)
+Mesmo sendo um modelo de fronteira, o ChatGPT na interface web **não injeta os 6 arquivos inteiros no prompt**: ele utiliza sua ferramenta interna de busca em chunks (*File Search*). A própria resposta do ChatGPT em `m07` e `m16` entrega esse comportamento ao dizer ***"no trecho consultado"***. Isso causou **4 falhas reais em perguntas `multi`**:
+
+1. **`m11` (Reprovado no Grader e no Judge — Falha de Rodapé):**
+   - *Pergunta:* Comparar a data de aprovação do Código de Conduta da Vale (`28/04/2026`) com o da Petrobras (`27/09/2024`, que fica na linha 481 — última linha do `Arquivo2.md`).
+   - *Resposta do ChatGPT:* *"O Código de Conduta da Vale registra aprovação pelo Conselho de Administração em 28/04/2026... **Os documentos fornecidos não informam a data específica de aprovação do Código de Conduta Ética da Petrobras.** [Arquivo2.md]"*
+   - *Diagnóstico:* Como o `Arquivo2.md` é o maior documento do corpus (~50 KB), o retriever interno do ChatGPT não recuperou o último chunk do arquivo e afirmou falsamente que a informação não existe! *(Nota: o `rerank_order` local cometeu exatamente o mesmo erro em `m11` pelo mesmo motivo).*
+
+2. **`m15` (Reprovado no Grader — Omissão de Políticas do Final do Documento):**
+   - *Pergunta:* Quais códigos `POL` aparecem tanto no `Arquivo1.md` quanto nas Referências do `Arquivo5.md`?
+   - *Resposta do ChatGPT:* Listou apenas as políticas do início do documento (`POL-0001-G`, `POL-0005-G`, `POL-0012-G`, `POL-0016-G`, `POL-0019-G`), omitindo `POL-0035-G`, `POL-0037-G` e `POL-0041-G`!
+   - *Destaque:* Aqui o **seu RAG local com `rerank_order` superou o ChatGPT**, pois recuperou os chunks certos e listou `POL-0041-G` e `POL-0037-G` corretamente!
+
+3. **`m09` (Falso Positivo Léxico, mas Erro Conceitual do ChatGPT):**
+   - *Resposta do ChatGPT:* *"Os documentos **não estabelecem uma conexão expressa** entre o valor 'A vida em primeiro lugar' e diretrizes específicas da Política de Gestão de Riscos."*
+   - *Diagnóstico:* O ChatGPT passou no grader léxico apenas porque repetiu a expressão `'A vida em primeiro lugar'` do enunciado ao negar a conexão! Na realidade, o 2º parágrafo do `Arquivo5.md` (Política de Gestão de Riscos da Vale) diz literalmente: *"'A Vida em Primeiro Lugar' é um valor primordial que norteia as atividades da Vale."* Tanto o **NotebookLM** quanto o **seu `rerank_order` local** encontraram essa conexão que o ChatGPT perdeu.
+
+4. **`m16` (Falso Positivo Léxico, mas Recuperação Incompleta do ChatGPT no `Arquivo4.md`):**
+   - *Resposta do ChatGPT:* Citou corretamente a definição e a `biometria facial` do `Arquivo3.md` (Vale), mas sobre a Petrobras escreveu: *"A cartilha da Petrobras trata dados pessoais sensíveis como uma categoria que exige atenção específica, **mas a definição completa e os exemplos solicitados não foram identificados no trecho consultado.** [Arquivo4.md]"*
+   - *Diagnóstico:* Novamente, o chunk da página 1 da cartilha da Petrobras (`Arquivo4.md`, linha 33) ficou de fora da busca interna do ChatGPT, enquanto o **NotebookLM** e o **seu `rerank_order` local** recuperaram a definição completa de ambos os documentos.
 
 ---
 
-## 5. Síntese Executiva
+## 4. Comparativo Direto dos 3 Sistemas nas Perguntas Críticas
 
-- **A recuperação local + F3 é altamente eficaz:** Com `rerank_order`, o pipeline local entregou todos os documentos necessários no contexto em **97% das perguntas respondíveis (`gold_all = 0.97`)** e eliminou 100% das alucinações nas perguntas sem resposta (`none = 1.00`).
-- **A diferença entre 80% (`rerank_order`) e 100% (`NotebookLM`) é majoritariamente de capacidade do modelo gerador, e não de recuperação:** Em **7 dos 8 erros** do `rerank_order`, os documentos corretos estavam presentes no prompt (`gold_all = True`), mas o modelo compacto (`qwen2.5:3b`) recusou por excesso de cautela ou omitiu a segunda parte de perguntas compostas.
+| Caso | RAG Local (`rerank_order` - Qwen 3B) | ChatGPT Web (File Search) | NotebookLM (Gemini Grounded) |
+| :--- | :--- | :--- | :--- |
+| **`d09` e `d16` (Datas de aprovação)** | Acertou `d09` (`28/04/2026`); omitiu data em `d16` | Acertou ambas (escreveu a data por extenso) | Acertou ambas no formato exato (`28/04/2026` e `16/12/2020`) |
+| **`m09` (Conexão 'A vida em primeiro lugar' e Riscos)** | **Acertou** (encontrou o trecho no `Arquivo5.md`) | **Errou** (disse que não havia conexão expressa) | **Acertou** |
+| **`m11` (Datas no rodapé de `Arquivo1` e `Arquivo2`)** | **Errou** (recusou por perder o rodapé no meio de 12 chunks) | **Errou** (disse que `Arquivo2.md` não informa a data) | **Acertou** (`28/04/2026` e `27/09/2024`) |
+| **`m15` (Cruzamento exaustivo de códigos `POL`)** | **Acertou** (incluiu `POL-0041-G` e `POL-0037-G`) | **Incompleto** (omitiu `POL-0041-G`, `POL-0035-G`, `POL-0037-G`) | **Acertou** (listou todas as 8 políticas em comum) |
+| **`m16` (Dados Sensíveis em `Arquivo3` e `Arquivo4`)** | **Acertou** (trouxe a definição da Vale e da Petrobras) | **Incompleto** (disse que não achou a definição no trecho consultado de `Arquivo4.md`) | **Acertou** |
+| **`n01` a `n08` (8 Perguntas-Armadilha sem resposta)** | **100% de recusa correta (8/8)** | **100% de recusa correta (8/8)** | **100% de recusa correta (8/8)** |
 
+---
+
+## 5. Conclusão Geral do Experimento
+
+1. **O NotebookLM foi o único sistema 100% consistente (40/40)** tanto na avaliação léxica quanto na semântica, demonstrando que sua indexação dedicada para documentos mantém visibilidade completa inclusive sobre rodapés (`m11`) e cruzamentos exaustivos de listas (`m15`).
+2. **Subir arquivos no ChatGPT Web não garante leitura integral do corpus:** O uso de *File Search* interno fez o ChatGPT falhar justamente em perguntas `multi` que exigiam varrer múltiplos trechos ou ler o rodapé de documentos longos (`m09`, `m11`, `m15`, `m16`). Em **3 dessas 4 perguntas (`m09`, `m15` e `m16`), o pipeline RAG local com `rerank_order` (`qwen2.5:3b`) superou o ChatGPT!**
+3. **Importância da Avaliação Dupla (Léxica + Semântica/Judge):** O grader léxico (`must_contain`) subestimou o ChatGPT em `d09`, `d16` e `m08` (por escrever datas por extenso ou usar verbo em vez de substantivo), mas superestimou o ChatGPT em `m09` e `m16` (onde as palavras-chave apareceram dentro de uma frase que dizia não ter encontrado a informação no trecho consultado).
