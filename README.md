@@ -211,7 +211,9 @@ O pipeline RAG utiliza dois modelos locais via Ollama:
 
 ### 2. Executando o Script de Comparação Externa
 
-Para processar e cruzar os resultados das 40 perguntas do notebook local com as respostas coletadas do **NotebookLM** (`respostas-notebooklm.json`) e do **ChatGPT Web** (`respostas-chatgpt.json`), execute:
+> **Nota:** As perguntas ao **ChatGPT Web** e ao **NotebookLM** foram submetidas diretamente em seus respectivos sites (utilizando os prompts em lotes preparados em [prompts_coleta_externa.md](prompts_coleta_externa.md)), **não havendo código executável associado** para a chamada direta a essas ferramentas. Suas respostas foram salvas nos arquivos `respostas-chatgpt.json` e `respostas-notebooklm.json`.
+
+Para processar, avaliar e cruzar automaticamente os resultados das 40 perguntas do notebook local com as respostas salvas do **NotebookLM** e do **ChatGPT Web**, execute:
 
 ```bash
 python compare_external.py
@@ -261,7 +263,7 @@ O gráfico consolidado a seguir (`results/scoreboard_comparativo.png`) apresenta
 
 ### Tabela Consolidada de Desempenho
 
-| Variante / Sistema | Direct (16) | Multi (16) | Recusa / None (8) | Acerto Geral Estrito (40) | gold_hit | gold_all | Contexto Médio (tokens) | Latência Média (s) |
+| Variante / Sistema | Direct (16) | Multi (16) | None (8) | Overall (40) | gold_hit | gold_all | Contexto (tokens) | Latência (s) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **baseline_r1** (k=4) | 0.38 | 0.31 | **1.00** | **0.48** | 0.91 | 0.78 | 1.959 | 5.40s |
 | **baseline_k12** (k=12) | 0.81 | 0.50 | 0.75 | **0.68** | **1.00** | 0.97 | 5.846 | 7.65s |
@@ -273,6 +275,17 @@ O gráfico consolidado a seguir (`results/scoreboard_comparativo.png`) apresenta
 | **rerank_order** (n=12, rerank + pontas) | 0.75 | **0.75** | **1.00** | **0.80** | **1.00** | 0.97 | 5.846 | 8.37s |
 | **ChatGPT** (Web - File Search) | **0.88** | **0.81** | **1.00** | **0.88** | **1.00** | **1.00** | — | — |
 | **NotebookLM** (Web - Gemini) | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | — | — |
+
+### Glossário das Métricas
+
+* **Direct**: Acurácia nas perguntas diretas, que exigem encontrar um fato simples e específico localizado em um único trecho do documento.
+* **Multi**: Acurácia nas perguntas de múltiplos passos (*multi-hop*), que exigem conectar e sintetizar informações espalhadas por vários trechos.
+* **None**: Acurácia nas perguntas cuja resposta não consta no corpus, medindo a capacidade do RAG de admitir a ausência do fato e evitar alucinações.
+* **Overall**: Acurácia geral do sistema, representando a taxa média de acertos considerando todas as categorias de perguntas do teste.
+* **Gold_hit**: Taxa de sucesso na busca, indicando se pelo menos um trecho contendo a resposta correta (*gold chunk*) foi recuperado entre os resultados.
+* **Gold_all**: Proporção total de todos os trechos relevantes necessários para responder à pergunta que foram recuperados com sucesso.
+* **Contexto (tokens)**: Quantidade média de tokens de contexto injetados no prompt da LLM, refletindo o volume de texto enviado ao gerador.
+* **Latência (s)**: Tempo médio em segundos necessário para o pipeline completo executar a busca, tratar o contexto e gerar a resposta final.
 
 ---
 
