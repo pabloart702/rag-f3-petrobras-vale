@@ -1,0 +1,20 @@
+# Dependências principais para RAG Família 3 (Petrobras × Vale)
+
+# Banco vetorial local
+chromadb>=1.5.0
+
+# Embeddings e Reranking (CrossEncoder)
+sentence-transformers>=3.0.0
+torch>=2.0.0
+
+# Manipulação de dados e relatórios
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.8.0
+
+# Requisições HTTP (comunicação com API do Ollama)
+requests>=2.31.0
+
+# Suporte a Jupyter Notebooks e widgets
+ipykernel>=6.29.0
+ipywidgets>=8.1.0
